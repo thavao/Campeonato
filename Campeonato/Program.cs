@@ -71,3 +71,62 @@ catch (Exception e)
 {
     Console.WriteLine(e.Message);
 }
+
+void ImprimirVencedor()
+{
+    try
+    {
+        SqlCommand cmd = new();
+        cmd.Connection = conexaoSql;
+        cmd.CommandText = "SELECT TOP 1 Nome, Apelido, Pontuacao, MaxGolPartida, TotalGol, GolRecebido" +
+            " FROM Time" +
+            " ORDER BY Pontuacao DESC, TotalGol DESC;";
+        using (SqlDataReader reader = cmd.ExecuteReader())
+        {
+            reader.Read();
+            Console.WriteLine("O time vencedor foi " + reader["Apelido"].ToString() + "!");
+            ImprimirTime(reader);
+
+        }
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
+}
+ImprimirVencedor();
+ImprimirTop5();
+void ImprimirTop5()
+{
+    try
+    {
+        SqlCommand cmd = new();
+        cmd.Connection = conexaoSql;
+        cmd.CommandText = "SELECT TOP 5 Nome, Apelido, Pontuacao, MaxGolPartida, TotalGol, GolRecebido" +
+            " FROM Time" +
+            " ORDER BY Pontuacao DESC, TotalGol DESC;";
+        using (SqlDataReader reader = cmd.ExecuteReader())
+        {
+            int i = 1;
+            while (reader.Read())
+            {
+                Console.WriteLine("X~~~~X~~~~X~~~~X~~~~X~~~~X~~~~X~~~~X~~~~X");
+                Console.WriteLine($"{i}º Lugar: " + reader["Apelido"].ToString());
+                ImprimirTime(reader);
+                Console.WriteLine();
+                i++;
+            }
+        }
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
+}
+
+void ImprimirTime(SqlDataReader time)
+{
+    Console.WriteLine($"Nome: {time["Nome"].ToString()} | Apelido {time["Apelido"].ToString()}");
+    Console.WriteLine($"Pontuacao: {time["Pontuacao"].ToString()} | Maior numero de gols em uma partida: {time["MaxGolPartida"].ToString()}");
+    Console.WriteLine($"Gols feitos: {time["TotalGol"].ToString()} | Gols tomados: {time["GolRecebido"].ToString()}");
+}
