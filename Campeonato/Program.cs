@@ -1,9 +1,49 @@
 ﻿using Campeonato;
 using Microsoft.Data.SqlClient;
+using System.Data;
 Banco conn = new Banco();
 
 SqlConnection conexaoSql = new(conn.getCaminho());
 
+
+void InserirTime(string nome, string apelido, DateOnly dataCriacao)
+{
+    try
+    {
+        conexaoSql.Open();
+
+        SqlCommand cmd = new("[dbo].[Inserir_Time]", conexaoSql);
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        SqlParameter n = new SqlParameter("@Nome", SqlDbType.VarChar);
+        SqlParameter a = new SqlParameter("@Apelido", SqlDbType.VarChar);
+        SqlParameter d = new SqlParameter("@DataCriacao", SqlDbType.Date);
+
+        n.Value = nome;
+        a.Value = apelido;
+        d.Value = dataCriacao;
+
+        cmd.Parameters.Add(n);
+        cmd.Parameters.Add(a);
+        cmd.Parameters.Add(d);
+
+
+        if (cmd.ExecuteNonQuery() == 1)
+            Console.WriteLine("Time inserido com sucesso");
+
+        else
+            Console.WriteLine("Não foi possível inserir o time...");
+
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+    finally
+    {
+        conexaoSql.Close();
+    }
+}
 
 void ImprimirPartidaComMaisgols()
 {
@@ -105,6 +145,7 @@ void ImprimirVencedor()
         cmd.CommandText = "SELECT TOP 1 Nome, Apelido, Pontuacao, MaxGolPartida, TotalGol, GolRecebido" +
             " FROM Time" +
             " ORDER BY Pontuacao DESC, TotalGol DESC;";
+        conexaoSql.Open();
         using (SqlDataReader reader = cmd.ExecuteReader())
         {
             reader.Read();
@@ -116,6 +157,10 @@ void ImprimirVencedor()
     catch (Exception e)
     {
         Console.WriteLine(e.Message);
+    }
+    finally
+    {
+        conexaoSql.Close();
     }
 }
 
@@ -160,6 +205,7 @@ void ImprimirTime(SqlDataReader time)
 }
 
 
+//InserirTime("Supernovas Footbol Clube", "Supernovas", new DateOnly(2019, 05, 26));
 ImprimirVencedor();
 ImprimirTop5();
 ImprimirPartidaComMaisgols();
