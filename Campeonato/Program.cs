@@ -46,6 +46,22 @@ void InserirTime(string nome, string apelido, DateOnly dataCriacao)
 }
 
 
+void ImprimirMaiorQtdGolPartida()
+{
+    SqlCommand cmd = new("SELECT Nome, MaxGolPartida FROM [Time]", conexaoSql);
+    conexaoSql.Open();
+
+    using (SqlDataReader reader = cmd.ExecuteReader())
+    {
+
+        Console.WriteLine("Maior numero de gols que cada time fez em um jogo");
+        while (reader.Read())
+        {
+            Console.WriteLine($"Time: {reader["Nome"]} | Gols: {reader["MaxGolPartida"]}");
+        }
+    }
+    conexaoSql.Close();
+}
 void ImprimirPartidaComMaisgols()
 {
     try
