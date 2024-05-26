@@ -5,7 +5,53 @@ Banco conn = new Banco();
 
 SqlConnection conexaoSql = new(conn.getCaminho());
 
+int opcao;
 
+do
+{
+    Console.Clear();
+    Console.WriteLine("SELECIONE UMA OPÇÃO");
+    Console.WriteLine("Ver");
+    Console.WriteLine("1 - Campeão do campeonato");
+    Console.WriteLine("2 - Classificação dos times");
+    Console.WriteLine("3 - Time que fez o maior numero de gols no campeonato");
+    Console.WriteLine("4 - Time que sofreu o maior numero de gols no campeonato");
+    Console.WriteLine("5 - A partida com mais gols no campeonato");
+    Console.WriteLine("6 - Maior numero de gols que cada time fez em um jogo");
+    Console.WriteLine("0 - Sair");
+    Console.Write("Opção: ");
+    opcao = int.Parse(Console.ReadLine());
+
+    switch (opcao)
+    {
+        case 0:
+            Console.WriteLine("Saindo...");
+            break;
+        case 1:
+            ImprimirVencedor();
+            break;
+        case 2:
+            ImprimirTop5();
+            break;
+        case 3:
+            ImprimirTimeQueMaisGoleou();
+            break;
+        case 4:
+            ImprimirTimeMaisGoleado();
+            break;
+        case 5:
+            ImprimirPartidaComMaisgols();
+            break;
+        case 6:
+            ImprimirMaiorQtdGolPartida();
+            break;
+        default:
+            Console.WriteLine("Opção inválida");
+            break;
+    }
+    Console.WriteLine("Pressione Enter para continuar...");
+    Console.ReadLine();
+} while (opcao != 0);
 void InserirTime(string nome, string apelido, DateOnly dataCriacao)
 {
     try
@@ -45,22 +91,31 @@ void InserirTime(string nome, string apelido, DateOnly dataCriacao)
     }
 }
 
-
 void ImprimirMaiorQtdGolPartida()
 {
-    SqlCommand cmd = new("SELECT Nome, MaxGolPartida FROM [Time]", conexaoSql);
-    conexaoSql.Open();
-
-    using (SqlDataReader reader = cmd.ExecuteReader())
+    try
     {
+        SqlCommand cmd = new("SELECT Nome, MaxGolPartida FROM [Time]", conexaoSql);
+        conexaoSql.Open();
 
-        Console.WriteLine("Maior numero de gols que cada time fez em um jogo");
-        while (reader.Read())
+        using (SqlDataReader reader = cmd.ExecuteReader())
         {
-            Console.WriteLine($"Time: {reader["Nome"]} | Gols: {reader["MaxGolPartida"]}");
+
+            Console.WriteLine("Maior numero de gols que cada time fez em um jogo");
+            while (reader.Read())
+            {
+                Console.WriteLine($"Time: {reader["Nome"]} | Gols: {reader["MaxGolPartida"]}");
+            }
         }
     }
-    conexaoSql.Close();
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+    finally
+    {
+        conexaoSql.Close();
+    }
 }
 void ImprimirPartidaComMaisgols()
 {
@@ -218,10 +273,6 @@ void ImprimirTime(SqlDataReader time)
     Console.WriteLine($"Gols feitos: {time["TotalGol"].ToString()} | Gols tomados: {time["GolRecebido"].ToString()}");
 }
 
-
-//InserirTime("Supernovas Footbol Clube", "Supernovas", new DateOnly(2019, 05, 26));
-
-
 DateOnly GerarData()
 {
     DateOnly data = new DateOnly();
@@ -310,24 +361,3 @@ void ImprimirPartida(SqlDataReader partida)
         $"Total de Gols: {partida["Total de gols"].ToString()}");
     Console.WriteLine("~~~~~X~~~X~~~X~~~X~~~~~");
 }
-
-
-GerarPartidas();
-
-Console.ReadLine();
-
-ImprimirVencedor();
-
-Console.ReadLine();
-ImprimirTop5();
-
-Console.ReadLine();
-ImprimirPartidaComMaisgols();
-
-Console.ReadLine();
-ImprimirTimeQueMaisGoleou();
-
-Console.ReadLine();
-
-ImprimirTimeMaisGoleado();
-Console.ReadLine();
