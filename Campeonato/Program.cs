@@ -52,44 +52,6 @@ do
     Console.WriteLine("Pressione Enter para continuar...");
     Console.ReadLine();
 } while (opcao != 0);
-void InserirTime(string nome, string apelido, DateOnly dataCriacao)
-{
-    try
-    {
-        conexaoSql.Open();
-
-        SqlCommand cmd = new("[dbo].[Inserir_Time]", conexaoSql);
-        cmd.CommandType = CommandType.StoredProcedure;
-
-        SqlParameter n = new SqlParameter("@Nome", SqlDbType.VarChar);
-        SqlParameter a = new SqlParameter("@Apelido", SqlDbType.VarChar);
-        SqlParameter d = new SqlParameter("@DataCriacao", SqlDbType.Date);
-
-        n.Value = nome;
-        a.Value = apelido;
-        d.Value = dataCriacao;
-
-        cmd.Parameters.Add(n);
-        cmd.Parameters.Add(a);
-        cmd.Parameters.Add(d);
-
-
-        if (cmd.ExecuteNonQuery() == 1)
-            Console.WriteLine("Time inserido com sucesso");
-
-        else
-            Console.WriteLine("Não foi possível inserir o time...");
-
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine(ex.Message);
-    }
-    finally
-    {
-        conexaoSql.Close();
-    }
-}
 
 void ImprimirMaiorQtdGolPartida()
 {
@@ -271,87 +233,6 @@ void ImprimirTime(SqlDataReader time)
     Console.WriteLine($"Nome: {time["Nome"].ToString()} | Apelido {time["Apelido"].ToString()}");
     Console.WriteLine($"Pontuacao: {time["Pontuacao"].ToString()} | Maior numero de gols em uma partida: {time["MaxGolPartida"].ToString()}");
     Console.WriteLine($"Gols feitos: {time["TotalGol"].ToString()} | Gols tomados: {time["GolRecebido"].ToString()}");
-}
-
-DateOnly GerarData()
-{
-    DateOnly data = new DateOnly();
-    data = DateOnly.FromDateTime(DateTime.Now);
-
-    int dias = new Random().Next(data.DayNumber - 40, data.DayNumber + 40);
-
-    data = new DateOnly();
-    data = data.AddDays(dias);
-    return data;
-}
-
-void GerarPartidas()
-{
-    SqlCommand cmd = new SqlCommand();
-    cmd.Connection = conexaoSql;
-    cmd.CommandText = "SELECT COUNT(*) FROM [Time]";
-
-    int nmrDeTimes;
-
-    conexaoSql.Open();
-    using (var retorno = cmd.ExecuteReader())
-    {
-        retorno.Read();
-        nmrDeTimes = (int)retorno[0];
-    }
-    conexaoSql.Close();
-
-    for (int t1 = 1; t1 <= nmrDeTimes; t1++)
-    {
-        for (int t2 = 1; t2 <= nmrDeTimes; t2++)
-        {
-            if (t1 != t2)
-            {
-                int golT1 = new Random().Next(0, 16);
-                int golT2 = new Random().Next(0, 16);
-                InserirPartida(t1, t2, GerarData(), golT1, golT2);
-            }
-        }
-    }
-
-}
-
-int InserirPartida(int timeCasa, int timeVisitante, DateOnly data, int golCasa, int golVisitante)
-{
-    try
-    {
-        SqlCommand cmd = new("[dbo].Inserir_Partida", conexaoSql);
-        cmd.CommandType = CommandType.StoredProcedure;
-        SqlParameter tCasa = new SqlParameter("@TimeCasa", SqlDbType.Int);
-        SqlParameter tVisitante = new SqlParameter("@TimeVisitante", SqlDbType.Int);
-        SqlParameter dataJogo = new SqlParameter("@Data", SqlDbType.Date);
-        SqlParameter gCasa = new SqlParameter("@GolCasa", SqlDbType.Int);
-        SqlParameter gVisitante = new SqlParameter("@GolVisitante", SqlDbType.Int);
-
-        tCasa.Value = timeCasa;
-        tVisitante.Value = timeVisitante;
-        dataJogo.Value = data;
-        gCasa.Value = golCasa;
-        gVisitante.Value = golVisitante;
-
-        cmd.Parameters.Add(tCasa);
-        cmd.Parameters.Add(tVisitante);
-        cmd.Parameters.Add(dataJogo);
-        cmd.Parameters.Add(gCasa);
-        cmd.Parameters.Add(gVisitante);
-
-        conexaoSql.Open();
-        return cmd.ExecuteNonQuery();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine(ex.Message);
-        return 0;
-    }
-    finally
-    {
-        conexaoSql.Close();
-    }
 }
 
 void ImprimirPartida(SqlDataReader partida)
