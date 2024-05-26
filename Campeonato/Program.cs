@@ -45,6 +45,7 @@ void InserirTime(string nome, string apelido, DateOnly dataCriacao)
     }
 }
 
+
 void ImprimirPartidaComMaisgols()
 {
     try
@@ -64,10 +65,7 @@ void ImprimirPartidaComMaisgols()
                 Console.WriteLine("Partida com mais gols");
                 while (valorRetornado.Read())
                 {
-                    Console.WriteLine($"{valorRetornado["Casa"].ToString()} {valorRetornado["GolCasa"].ToString()} X {valorRetornado["GolVisitante"].ToString()} {valorRetornado["Visitante"]}");
-                    Console.WriteLine($"Data: {valorRetornado["Data"].ToString()}\n" +
-                        $"Total de Gols: {valorRetornado["Total de gols"].ToString()}");
-                    Console.WriteLine("~~~~~X~~~X~~~X~~~X~~~~~");
+                    ImprimirPartida(valorRetornado);
                 }
             }
         }
@@ -206,8 +204,114 @@ void ImprimirTime(SqlDataReader time)
 
 
 //InserirTime("Supernovas Footbol Clube", "Supernovas", new DateOnly(2019, 05, 26));
+
+
+DateOnly GerarData()
+{
+    DateOnly data = new DateOnly();
+    data = DateOnly.FromDateTime(DateTime.Now);
+
+    int dias = new Random().Next(data.DayNumber - 40, data.DayNumber + 40);
+
+    data = new DateOnly();
+    data = data.AddDays(dias);
+    return data;
+}
+
+void GerarPartidas()
+{
+    SqlCommand cmd = new SqlCommand();
+    cmd.Connection = conexaoSql;
+    cmd.CommandText = "SELECT COUNT(*) FROM [Time]";
+
+    int nmrDeTimes;
+
+    conexaoSql.Open();
+    using (var retorno = cmd.ExecuteReader())
+    {
+        retorno.Read();
+        nmrDeTimes = (int)retorno[0];
+    }
+    conexaoSql.Close();
+
+    for (int t1 = 1; t1 <= nmrDeTimes; t1++)
+    {
+        for (int t2 = 1; t2 <= nmrDeTimes; t2++)
+        {
+            if (t1 != t2)
+            {
+                int golT1 = new Random().Next(0, 16);
+                int golT2 = new Random().Next(0, 16);
+                InserirPartida(t1, t2, GerarData(), golT1, golT2);
+            }
+        }
+    }
+
+}
+
+int InserirPartida(int timeCasa, int timeVisitante, DateOnly data, int golCasa, int golVisitante)
+{
+    try
+    {
+        SqlCommand cmd = new("[dbo].Inserir_Partida", conexaoSql);
+        cmd.CommandType = CommandType.StoredProcedure;
+        SqlParameter tCasa = new SqlParameter("@TimeCasa", SqlDbType.Int);
+        SqlParameter tVisitante = new SqlParameter("@TimeVisitante", SqlDbType.Int);
+        SqlParameter dataJogo = new SqlParameter("@Data", SqlDbType.Date);
+        SqlParameter gCasa = new SqlParameter("@GolCasa", SqlDbType.Int);
+        SqlParameter gVisitante = new SqlParameter("@GolVisitante", SqlDbType.Int);
+
+        tCasa.Value = timeCasa;
+        tVisitante.Value = timeVisitante;
+        dataJogo.Value = data;
+        gCasa.Value = golCasa;
+        gVisitante.Value = golVisitante;
+
+        cmd.Parameters.Add(tCasa);
+        cmd.Parameters.Add(tVisitante);
+        cmd.Parameters.Add(dataJogo);
+        cmd.Parameters.Add(gCasa);
+        cmd.Parameters.Add(gVisitante);
+
+        conexaoSql.Open();
+        return cmd.ExecuteNonQuery();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+        return 0;
+    }
+    finally
+    {
+        conexaoSql.Close();
+    }
+}
+
+void ImprimirPartida(SqlDataReader partida)
+{
+    Console.WriteLine($"{partida["Casa"].ToString()} {partida["GolCasa"].ToString()} X {partida["GolVisitante"].ToString()} {partida["Visitante"]}");
+    Console.WriteLine($"Data: {partida["Data"].ToString()}\n" +
+        $"Total de Gols: {partida["Total de gols"].ToString()}");
+    Console.WriteLine("~~~~~X~~~X~~~X~~~X~~~~~");
+}
+
+
+GerarPartidas();
+
+Console.ReadLine();
+
 ImprimirVencedor();
+
+Console.ReadLine();
 ImprimirTop5();
+
+Console.ReadLine();
 ImprimirPartidaComMaisgols();
+
+Console.ReadLine();
 ImprimirTimeQueMaisGoleou();
+
+Console.ReadLine();
+
 ImprimirTimeMaisGoleado();
+Console.ReadLine();
