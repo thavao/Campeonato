@@ -4,72 +4,96 @@ Banco conn = new Banco();
 
 SqlConnection conexaoSql = new(conn.getCaminho());
 
-conexaoSql.Open();
 
-SqlCommand cmd = new("[dbo].[Partida_Com_Mais_Gols]", conexaoSql);
-cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-try
+void ImprimirPartidaComMaisgols()
 {
-
-    using (SqlDataReader valorRetornado = cmd.ExecuteReader())
+    try
     {
 
-        if (valorRetornado.HasRows)
+        conexaoSql.Open();
+
+        SqlCommand cmd = new("[dbo].[Partida_Com_Mais_Gols]", conexaoSql);
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+        using (SqlDataReader valorRetornado = cmd.ExecuteReader())
         {
 
-            Console.WriteLine("Partida com mais gols");
-            while (valorRetornado.Read())
+            if (valorRetornado.HasRows)
             {
-                Console.WriteLine($"{valorRetornado["Casa"].ToString()} {valorRetornado["GolCasa"].ToString()} X {valorRetornado["GolVisitante"].ToString()} {valorRetornado["Visitante"]}");
-                Console.WriteLine($"Data: {valorRetornado["Data"].ToString()}\n" +
-                    $"Total de Gols: {valorRetornado["Total de gols"].ToString()}");
-                Console.WriteLine("~~~~~X~~~X~~~X~~~X~~~~~");
+
+                Console.WriteLine("Partida com mais gols");
+                while (valorRetornado.Read())
+                {
+                    Console.WriteLine($"{valorRetornado["Casa"].ToString()} {valorRetornado["GolCasa"].ToString()} X {valorRetornado["GolVisitante"].ToString()} {valorRetornado["Visitante"]}");
+                    Console.WriteLine($"Data: {valorRetornado["Data"].ToString()}\n" +
+                        $"Total de Gols: {valorRetornado["Total de gols"].ToString()}");
+                    Console.WriteLine("~~~~~X~~~X~~~X~~~X~~~~~");
+                }
             }
         }
     }
-}
-catch (Exception e)
-{
-    Console.WriteLine(e.Message);
-}
-
-try
-{
-    cmd = new("[dbo].[Time_Mais_Goleou]", conexaoSql);
-    cmd.CommandType = System.Data.CommandType.StoredProcedure;
-    Console.WriteLine("O time que mais fez gol foi: ");
-    using (SqlDataReader ValorRetornado = cmd.ExecuteReader())
+    catch (Exception e)
     {
-        while (ValorRetornado.Read())
-            Console.WriteLine($"O time {ValorRetornado["Nome"].ToString()} fez {ValorRetornado["TotalGol"]} gols no campeonato");
+        Console.WriteLine(e.Message);
     }
-
-
-
-}
-catch (Exception e)
-{
-    Console.WriteLine(e.Message);
-}
-
-try
-{
-    cmd = new("[dbo].[Time_Mais_Goleado]", conexaoSql);
-    cmd.CommandType = System.Data.CommandType.StoredProcedure;
-    Console.WriteLine("O time que mais tomou gol foi: ");
-    using (SqlDataReader ValorRetornado = cmd.ExecuteReader())
+    finally
     {
-        while (ValorRetornado.Read())
-            Console.WriteLine($"O time {ValorRetornado["Nome"].ToString()} tomou {ValorRetornado["GolRecebido"]} gols no campeonato");
+        conexaoSql.Close();
     }
-
-
-
 }
-catch (Exception e)
+void ImprimirTimeQueMaisGoleou()
 {
-    Console.WriteLine(e.Message);
+    try
+    {
+
+        SqlCommand cmd = new("[dbo].[Time_Mais_Goleou]", conexaoSql);
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        Console.WriteLine("O time que mais fez gol foi: ");
+        conexaoSql.Open();
+        using (SqlDataReader ValorRetornado = cmd.ExecuteReader())
+        {
+            while (ValorRetornado.Read())
+                Console.WriteLine($"O time {ValorRetornado["Nome"].ToString()} fez {ValorRetornado["TotalGol"]} gols no campeonato");
+        }
+
+
+
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
+    finally
+    {
+        conexaoSql.Close();
+    }
+}
+
+void ImprimirTimeMaisGoleado()
+{
+    try
+    {
+        SqlCommand cmd = new("[dbo].[Time_Mais_Goleado]", conexaoSql);
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        Console.WriteLine("O time que mais tomou gol foi: ");
+        conexaoSql.Open();
+        using (SqlDataReader ValorRetornado = cmd.ExecuteReader())
+        {
+            while (ValorRetornado.Read())
+                Console.WriteLine($"O time {ValorRetornado["Nome"].ToString()} tomou {ValorRetornado["GolRecebido"]} gols no campeonato");
+        }
+
+
+
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
+    finally
+    {
+        conexaoSql.Close();
+    }
 }
 
 void ImprimirVencedor()
@@ -94,8 +118,7 @@ void ImprimirVencedor()
         Console.WriteLine(e.Message);
     }
 }
-ImprimirVencedor();
-ImprimirTop5();
+
 void ImprimirTop5()
 {
     try
@@ -105,6 +128,7 @@ void ImprimirTop5()
         cmd.CommandText = "SELECT TOP 5 Nome, Apelido, Pontuacao, MaxGolPartida, TotalGol, GolRecebido" +
             " FROM Time" +
             " ORDER BY Pontuacao DESC, TotalGol DESC;";
+        conexaoSql.Open();
         using (SqlDataReader reader = cmd.ExecuteReader())
         {
             int i = 1;
@@ -122,6 +146,10 @@ void ImprimirTop5()
     {
         Console.WriteLine(e.Message);
     }
+    finally
+    {
+        conexaoSql.Close();
+    }
 }
 
 void ImprimirTime(SqlDataReader time)
@@ -130,3 +158,10 @@ void ImprimirTime(SqlDataReader time)
     Console.WriteLine($"Pontuacao: {time["Pontuacao"].ToString()} | Maior numero de gols em uma partida: {time["MaxGolPartida"].ToString()}");
     Console.WriteLine($"Gols feitos: {time["TotalGol"].ToString()} | Gols tomados: {time["GolRecebido"].ToString()}");
 }
+
+
+ImprimirVencedor();
+ImprimirTop5();
+ImprimirPartidaComMaisgols();
+ImprimirTimeQueMaisGoleou();
+ImprimirTimeMaisGoleado();
